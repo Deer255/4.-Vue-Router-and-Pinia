@@ -1,12 +1,12 @@
-import type { EventState, Event } from '@/types'
+import type { EventState, Data } from '@/types'
 import { defineStore } from 'pinia'
 export const useEventStore = defineStore('event', {
   state: (): EventState => ({
-    event: null
+    data: null
   }),
   actions: {
-    setEvent(event: Event): void {
-      this.event = event
+    setEvent(data: Data): void {
+      this.data = data
     }
   }
 })

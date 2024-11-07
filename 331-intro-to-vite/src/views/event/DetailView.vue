@@ -1,14 +1,24 @@
 <script setup lang="ts">
 import { toRefs, defineProps } from 'vue'
-import type { Event } from '@/types'
+import { type Data } from '@/types'
 
 const props = defineProps<{
-  event: Event
-  id: string
+    data: Data
+    id: string
 }>()
-const { event } = toRefs(props)
+const { data } = toRefs(props)
+
 </script>
 <template>
-  <p>{{ event.time }} on {{ event.date }} @ {{ event.location }}</p>
-  <p>{{ event.description }}</p>
+  <div v-if="data">
+    <h1>{{ data.name }}</h1>
+    <p>trips {{ data.trips }}</p>
+    <ul>
+      <li v-for="airline in data.airline" :key="airline._id">
+        <router-link :to="{ name: 'airline-detail-view', params: { id: $route.params.id, airlineId: airline._id } }">
+          {{ airline.name }}
+        </router-link>
+      </li>
+    </ul>
+  </div>
 </template>

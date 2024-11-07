@@ -1,74 +1,79 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import EventListView from '@/views/EventListView.vue'
+import PassengerView from '@/views/PassengerView.vue'
 import AboutView from '@/views/AboutView.vue'
-import EventDetailView from '@/views/event/DetailView.vue'
-import EventRegisterView from '@/views/event/RegisterView.vue'
-import EventEditView from '@/views/event/EditView.vue'
-import EventLayoutView from '@/views/event/LayoutView.vue'
-import StudentsView from '@/views/StudentsView.vue'
+import PassengerDetailView from '@/views/passenger/DetailView.vue'
+import PassengerRegisterView from '@/views/passenger/RegisterView.vue'
+import PassengerEditView from '@/views/passenger/EditView.vue'
+import PassengerLayoutView from '@/views/passenger/LayoutView.vue'
 import NotFoundView from '@/views/NotFoundView.vue'
+import NetworkErrorView from '@/views/NetworkErrorView.vue'
+import AirlineView from '@/views/passenger/AirlineView.vue'
 import nProgress from 'nprogress'
-import EventService from '@/services/EventService'
-
+import PassengerServices from '@/services/PassengerServices'
+import { useEventStore } from '@/stores/event'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'event-list-view',
-      component: EventListView,
+      name: 'passenger',
+      component: PassengerView,
       props: route => ({ page: parseInt(route.query.page?.toString() || '1') }),
     },
     {
-      path: '/event/:id',
-      name: 'event-layout-view',
-      component: EventLayoutView,
+      path: '/passenger/:id',
+      name: 'passenger-layout-view',
+      component: PassengerLayoutView,
       props: true,
       beforeEnter: (to) => {
-        const id = parseInt(to.params.id as string)
-        const eventStore = useEventStore() 
-        return EventService.getEvent(id)
+        const id = to.params._id as string;
+        const eventStore = useEventStore()
+        return PassengerServices.getPassenger(id)
           .then((response) => {
-           // need to setup the data for the event
-          }).catch((error) => {
+            // need to setup the data for the event
+            eventStore.setEvent(response.data)
+          })
+          .catch((error) => {
             if (error.response && error.response.status === 404) {
               return {
                 name: '404-resource-view',
                 params: { resource: 'event' }
               }
-            } else{
-            return { name: 'network-error-view' }
-          }
-        }) 
-              },
+            } else {
+              return { name: 'network-error-view' }
+            }
+          })
+      },
       children: [
         {
           path: '',
-          name: 'event-detail-view',
-          component: EventDetailView,
+          name: 'passenger-detail-view',
+          component: PassengerDetailView,
+          props: true,
+        },
+        {
+          path: 'airline/:airlineId',
+          name: 'airline-detail-view',
+          component: AirlineView,
           props: true,
         },
         {
           path: 'register',
-          name: 'event-register-view',
-          component: EventRegisterView,
+          name: 'passenger-register-view',
+          component: PassengerRegisterView,
           props: true,
         },
         {
           path: 'edit',
-          name: 'event-edit-view',
-          component: EventEditView,
+          name: 'passenger-edit-view',
+          component: PassengerEditView,
           props: true,
         },
       ],
     },
-
     {
       path: '/about',
       name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
       component: AboutView,
     },
     {
@@ -78,29 +83,31 @@ const router = createRouter({
       props: true,
     },
     {
+      path: '/network-error',
+      name: 'network-error-view',
+      component: NetworkErrorView,
+    },
+    {
       path: '/:catchAll(.*)',
       name: 'not-found',
       component: NotFoundView,
     },
-    scrollBehavior(to, from, savedPosition) ,
-          if (savedPosition) {
-            return savedPosition
-          } else ,
-            return { top: 0 }
-          }
-       }
-    {
-      path: '/students',
-      name: 'students',
-      component: StudentsView,
-    },
   ],
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  }
 })
-  router.beforeEach(() => {
-    nProgress.start()
-  })
-  
-  router.afterEach(() => {
-    nProgress.done()
-  })
+router.beforeEach(() => {
+  nProgress.start()
+})
+
+router.afterEach(() => {
+  nProgress.done()
+})
+
+
 export default router
